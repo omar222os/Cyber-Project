@@ -28,3 +28,20 @@ Ensure you have [Docker](https://docs.docker.com/get-docker/) and Docker Compose
    ```bash
    git clone <YOUR_GITHUB_REPO_URL>
    cd <YOUR_PROJECT_FOLDER>
+
+    Build and start the containers:
+    Bash
+
+    docker compose up -d --build
+
+   *Note: On the first run, the MySQL container takes about 30–40 seconds to initialize the database and seed the dummy data. The API container will automatically wait for the database to become healthy.*
+
+3. **Access the application:**
+   Open your browser and navigate to:
+   **`http://localhost`** or **`http://127.0.0.1`**
+
+### Troubleshooting Database State
+If the database schema fails to load or you need to reset the lab to its default state, clear the Docker volume cache:
+```bash
+docker compose down -v
+docker compose up -d --build
