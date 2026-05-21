@@ -37,7 +37,7 @@
 
     <script>
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
-            e.preventDefault(); // Stop standard form submission
+            e.preventDefault(); 
             
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
@@ -53,12 +53,9 @@
                 const data = await response.json();
 
                 if (response.ok && data.success) {
-                    // Save user info to local storage to simulate a session
                     localStorage.setItem('user', JSON.stringify(data.user));
-                    // Redirect to the directory page
                     window.location.href = 'directory.html';
                 } else {
-                    // Show custom error or raw SQL error for Error-Based SQLi
                     errorBox.style.display = 'block';
                     errorBox.innerHTML = `<strong>Error:</strong> ${data.message} <br><br> ${data.error ? `<strong>DB Error:</strong> ${data.error}<br><strong>Query:</strong> ${data.query}` : ''}`;
                 }
